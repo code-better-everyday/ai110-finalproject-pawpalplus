@@ -174,6 +174,76 @@ class Scheduler:
 
         return warnings
 
+    def detect_group_walks(self) -> list:
+        """
+        Identify time slots where 2+ pets of the same species all have walk tasks scheduled.
+        These are cooperative group walks — not scheduling conflicts.
+        Returns a list of info strings, one per qualifying slot.
+        """
+        pet_species = {pet.name: pet.species for pet in self.owner.pets}
+        slots: dict = {}
+
+        for pet_name, task in self.get_schedule():
+            if "walk" not in task.name.lower():
+                continue
+            key = (task.scheduled_time, task.due_date)
+            slots.setdefault(key, []).append(
+                (pet_name, task.name, pet_species.get(pet_name, ""))
+            )
+
+        results = []
+        for (time, due_date), entries in slots.items():
+            if len(entries) < 2:
+                continue
+            species_in_slot = {e[2] for e in entries}
+            if len(species_in_slot) == 1:  # all same species — qualifies as group walk
+                pet_names = " and ".join(e[0] for e in entries)
+                species = list(species_in_slot)[0]
+                results.append(
+                    f"Group walk at {time} on {due_date}: {pet_names} ({species}s)"
+                )
+        return results
+
+    def detect_overlap_conflicts(self) -> list:
+        """
+        Check for tasks whose time windows overlap even if start times differ.
+        Example: a 60-min walk at 07:30 and a 30-min vet at 08:00 overlap by 30 minutes.
+        Complements detect_conflicts() which only catches exact HH:MM matches.
+        Returns a list of warning strings for each overlapping pair.
+        """
+        def to_minutes(hhmm: str) -> int:
+            try:
+                h, m = hhmm.split(":")
+                return int(h) * 60 + int(m)
+            except ValueError:
+                return -1
+
+        schedule = self.get_schedule()
+        warnings = []
+
+        for i, (_, task_a) in enumerate(schedule):
+            start_a = to_minutes(task_a.scheduled_time)
+            end_a = start_a + task_a.duration_minutes
+
+            for j, (_, task_b) in enumerate(schedule):
+                if j <= i:
+                    continue
+                if task_a.due_date != task_b.due_date:
+                    continue
+                if task_a.scheduled_time == task_b.scheduled_time:
+                    continue  # exact match — already covered by detect_conflicts()
+
+                start_b = to_minutes(task_b.scheduled_time)
+                end_b = start_b + task_b.duration_minutes
+
+                if start_a < end_b and start_b < end_a:
+                    warnings.append(
+                        f"Overlap on {task_a.due_date}: '{task_a.name}' "
+                        f"({task_a.scheduled_time}, {task_a.duration_minutes} min) overlaps "
+                        f"'{task_b.name}' ({task_b.scheduled_time}, {task_b.duration_minutes} min)"
+                    )
+        return warnings
+
     def handle_recurrence(self, task: Task, pet: Pet) -> None:
         """
         When a recurring task is marked complete, create the next occurrence.

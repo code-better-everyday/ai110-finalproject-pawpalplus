@@ -81,6 +81,82 @@ ai110-finalproject-pawpalplus/
 
 ---
 
+---
+
+## Session Log — 2026-07-28 (Day 1)
+
+### ✅ Done today
+
+| # | What | File(s) touched |
+|---|------|----------------|
+| 1 | Created final project repo with full folder structure | `ai110-finalproject-pawpalplus/` |
+| 2 | Copied all Module 2 source files, initialized git, first commit | all root files |
+| 3 | Created venv, installed requirements, ran baseline app | `.venv/` |
+| 4 | Created 3 planning docs | `planning/overview.md`, `rag_design.md`, `submission_checklist.md` |
+| 5 | JSON data persistence — seed file + "Load saved data" UI at Step 1 | `data/users.json`, `app.py` |
+| 6 | Species dropdown fix — added rabbit, bird, fish, hamster | `app.py` |
+| 7 | `Scheduler.detect_group_walks()` — same-species walk at same slot = group walk | `pawpal_system.py` |
+| 8 | `Scheduler.detect_overlap_conflicts()` — flags duration overlaps, not just exact time clashes | `pawpal_system.py` |
+| 9 | Copied README from Module 2, removed CLI output, added all required sections with `[TODO]` placeholders | `README.md` |
+
+---
+
+## What Still Needs to Be Done
+
+Work through these in order — each builds on the last:
+
+### 🔲 1. Extend the test suite — `tests/test_pawpal.py` (30 min)
+- Add 6+ new tests covering `detect_group_walks()` and `detect_overlap_conflicts()`
+- Target: 20+ tests, all passing
+- Run: `python -m pytest tests/ -v` and paste the output into the `README.md` testing section
+
+### 🔲 2. Wire 3-state rendering in `app.py` Step 3 + Step 4 (30 min)
+- Step 3 task list and Step 4 schedule table currently show 2 states (normal / orange ⚠)
+- Add **blue 🐾 group walk** as a third state using `Scheduler.detect_group_walks()`
+- Also wire **overlap conflict** warnings into the Step 4 conflict banner
+
+### 🔲 3. Mark-complete + recurrence in `app.py` Step 3 (20 min)
+- Add a ✓ checkbox per task row
+- On check: call `task.mark_complete()` then `scheduler.handle_recurrence(task, pet)`
+- Backend already coded — just needs to be wired to the UI
+
+### 🔲 4. Build `ai_advisor.py` (60 min)
+- See `planning/rag_design.md` for full design
+- Key functions: `build_context(owner)`, `ask_advisor(owner, question)`, `log_interaction(q, a)`
+- Model: `claude-haiku-4-5-20251001`, max_tokens=512
+- Add `anthropic>=0.25` and `python-dotenv` to `requirements.txt`
+- Create `.env.example` with `ANTHROPIC_API_KEY=your-key-here`
+- Create `.env` locally with real key (already gitignored)
+
+### 🔲 5. Wire Step 5 into `app.py` (20 min)
+- Text input for question → call `ask_advisor(owner, question)` → display response
+- Handle missing API key gracefully (Streamlit warning, no crash)
+- Take a screenshot of Step 5 in action for the README
+
+### 🔲 6. Run the app, ask 3 real questions, paste outputs into README (20 min)
+- Load Abhishek's profile, add tasks for Chintu/Pintu/Chinni
+- Ask 3 natural-language questions and capture the AI responses
+- Paste as fenced code blocks into the `[TODO]` sections in `README.md`
+
+### 🔲 7. Write `diagrams/architecture.mmd` (20 min)
+- Mermaid flowchart: User → Streamlit UI → Scheduler / AI Advisor → Claude API → Logger
+- Also update `diagrams/uml_final.mmd` to include the 2 new Scheduler methods
+
+### 🔲 8. Write `model_card.md` (30 min)
+- How Claude Code was used to build this project
+- One helpful AI suggestion (with example)
+- One flawed AI suggestion and how it was caught/fixed
+- System limitations
+
+### 🔲 9. Final checks before submission (30 min)
+- `streamlit run app.py` — smoke test all 5 steps end to end
+- `python -m pytest tests/ -v` — all 20+ tests green
+- Create public GitHub repo → push → verify commit history looks clean
+- Check every box in `planning/submission_checklist.md`
+- **Deadline: Monday August 3rd, 1:59 AM CDT**
+
+---
+
 ## What's Unchanged from Module 2
 
 - `Task`, `Pet`, `Owner`, `Scheduler` core classes — keep as-is

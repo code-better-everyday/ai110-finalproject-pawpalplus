@@ -1,0 +1,12 @@
+{
+  "users": [
+    {
+      "name": "Abhishek",
+      "pets": [
+        {"name": "Chintu", "species": "dog"},
+        {"name": "Pintu",  "species": "dog"},
+        {"name": "Chinni", "species": "cat"}
+      ]
+    }
+  ]
+}

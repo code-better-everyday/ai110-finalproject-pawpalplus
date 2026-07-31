@@ -7,8 +7,22 @@ backend logic defined in pawpal_system.py.
 Run with:  streamlit run app.py
 """
 
+import json
 import streamlit as st
+from pathlib import Path
 from pawpal_system import Owner, Pet, Task, Scheduler
+
+DATA_FILE = Path(__file__).parent / "data" / "users.json"
+
+
+def load_all_users() -> list:
+    """Return list of user dicts from data/users.json, or [] if missing/corrupt."""
+    if not DATA_FILE.exists():
+        return []
+    try:
+        return json.loads(DATA_FILE.read_text(encoding="utf-8")).get("users", [])
+    except (json.JSONDecodeError, KeyError):
+        return []
 
 
 def species_emoji(species: str) -> str:
@@ -50,7 +64,25 @@ if "owner" not in st.session_state:
     st.session_state.owner = None
 
 if st.session_state.owner is None:
-    # Owner not yet set — show input
+    # ── Saved profiles ─────────────────────────────────────────────────────────
+    saved_users = load_all_users()
+    if saved_users:
+        st.markdown("**Welcome back! We found saved profiles:**")
+        for user_data in saved_users:
+            pet_summary = "  •  ".join(
+                f"{species_emoji(p['species'])} {p['name']} ({p['species']})"
+                for p in user_data["pets"]
+            )
+            st.info(f"**{user_data['name']}** — {pet_summary}")
+            if st.button(f"Load {user_data['name']}'s data", key=f"load_{user_data['name']}"):
+                restored_owner = Owner(name=user_data["name"])
+                for p in user_data["pets"]:
+                    restored_owner.add_pet(Pet(name=p["name"], species=p["species"]))
+                st.session_state.owner = restored_owner
+                st.rerun()
+        st.markdown("— or start fresh —")
+
+    # ── Manual entry ───────────────────────────────────────────────────────────
     owner_name = st.text_input("Your name", value="", placeholder="Enter your name")
     if st.button("Set owner"):
         if not owner_name.strip():
@@ -96,7 +128,7 @@ pet_name = st.text_input(
     "Pet name", value="", placeholder="Enter your pet's name",
     key=f"pet_name_{pk}"
 )
-species = st.selectbox("Species", ["dog", "cat", "other"], key=f"species_{pk}")
+species = st.selectbox("Species", ["dog", "cat", "rabbit", "bird", "fish", "hamster", "other"], key=f"species_{pk}")
 
 if st.button("Add pet"):
     if not pet_name.strip():
