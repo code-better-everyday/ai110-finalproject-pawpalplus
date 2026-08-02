@@ -164,13 +164,13 @@ class Scheduler:
         for pet, task in self.get_schedule():
             key = (task.scheduled_time, task.due_date)
             if key in seen:
-                # Two tasks share the same time slot — flag it as a conflict
+                first_pet, first_task = seen[key]
                 warnings.append(
                     f"Conflict at {task.scheduled_time} on {task.due_date}: "
-                    f"'{seen[key]}' and '{task.name}'"
+                    f"'{first_task}' ({first_pet}) and '{task.name}' ({pet})"
                 )
             else:
-                seen[key] = task.name
+                seen[key] = (pet, task.name)
 
         return warnings
 
