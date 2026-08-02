@@ -295,6 +295,45 @@ UML diagrams: [`diagrams/uml.mmd`](diagrams/uml.mmd) (initial design) and [`diag
 
 ---
 
+## 🛡️ Reliability & Guardrails
+
+The system includes three layers of reliability protection.
+
+### Input validation — API key guard
+
+If `ANTHROPIC_API_KEY` is not set, the advisor fails safely with an actionable message instead of throwing an unhandled exception:
+
+| Input | Behavior | Result shown to user |
+|-------|----------|---------------------|
+| Question sent, no API key in `.env` | `ask_advisor()` checks env before calling API | `"ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add your key, then restart the app."` |
+| Question sent, key present | Claude is called with schedule context | Grounded answer referencing real pet names and times |
+| Empty question submitted | Streamlit `st.form` blocks submission | Submit button disabled until text is entered |
+
+### Output guardrail — system prompt scope restriction
+
+The system prompt explicitly instructs the model to answer only from the provided schedule data:
+
+> *"Answer questions based only on the data provided in the schedule above. If a question cannot be answered from the schedule data, say so clearly rather than guessing."*
+
+This prevents the model from drifting into generic pet-care advice when the user's schedule is the authoritative source.
+
+### Evaluation script — `eval_advisor.py`
+
+A test harness that runs 5 predefined questions through the live advisor and checks each response for expected keywords:
+
+```
+Test 3: Identifies the 08:00 feeding conflict with pet names
+  Q: Are there any scheduling conflicts I should fix?
+  A: Yes, there are 3 scheduling conflicts to address...
+     08:00 – Feeding (Pintu & Chinni)
+  PASS — keywords matched: ['08:00', 'feeding', 'pintu', 'chinni']
+```
+
+Run: `python eval_advisor.py` — prints a scored summary; saves full output to `logs/eval_log.txt`.
+Full 5/5 eval run is shown in the [Stretch Features](#-stretch-features) section below.
+
+---
+
 ## 🚀 Stretch Features
 
 ### RAG-Powered Context (implemented — +2 points)
@@ -373,6 +412,24 @@ Full eval log saved to `logs/eval_log.txt`. The harness skips tests gracefully i
 
 ## 💭 Reflection
 
-Building PawPal+ into a full AI system reinforced that the hardest part isn't the API call — it's constructing a context that gives the model enough information to be genuinely useful rather than generically helpful. The AI advisor is only as good as the schedule data injected into the prompt; a well-structured context makes the difference between "walk your dog" and "Chintu's morning walk at 07:30 is your top priority today."
+### How AI was used during development
 
-> The graded responsible-AI reflection — how AI was used to build this project, one helpful suggestion, one flawed suggestion, and system limitations — is in [`model_card.md`](model_card.md).
+Claude Code was the primary development partner throughout this project — not just for writing boilerplate, but for design decisions and algorithm choices. It drafted the `Task`/`Pet`/`Owner`/`Scheduler` class hierarchy, implemented `detect_group_walks()` and `detect_overlap_conflicts()` from natural-language descriptions, built the 5-step Streamlit flow, and designed the RAG context builder and prompt template. Every change was reviewed and approved before committing. Final decisions on features, data design, and UI behavior were made by the human developer.
+
+### One helpful AI suggestion
+
+**Use in-memory context injection instead of a vector store.** The AI recommended formatting the owner's full schedule as plain text and injecting it directly into the Claude prompt — no vector database, no embeddings. This was the right call: a single owner's schedule fits in one prompt, and skipping the vector store kept the system runnable with just a Python venv and an API key.
+
+### One flawed AI suggestion
+
+**Group walks flagged as conflicts.** The AI's initial conflict detector flagged any two tasks sharing a time slot as an error — so Chintu and Pintu's morning walk at 07:00 showed as a red ⚠ "Conflict — delete one task to resolve." The AI had no concept of cooperative scheduling. The human developer caught this immediately when loading the saved profile: two dogs walking together is a feature, not a bug. The fix required a new `detect_group_walks()` method and a third rendering state (blue 🐾 for group walks), which the AI could not have initiated on its own.
+
+### System limitations
+
+- Single-user, single-session — no multi-user support or server-side persistence
+- HH:MM string time — cannot handle tasks crossing midnight or reason about time zones
+- AI advisor responses are not deterministic — same question may produce different answers
+- Group walk detection relies on the word "walk" in the task name — "outdoor exercise" is not recognised
+- Western pet care bias in the underlying model — advice may not reflect non-Western norms or unusual species
+
+> Full responsible-AI analysis — including three flawed suggestions, potential misuse scenarios, and what surprised us testing AI reliability — is in [`model_card.md`](model_card.md).
