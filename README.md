@@ -3,27 +3,44 @@
 > **Final project for AI110 | Foundations of AI Engineering — Module 4**
 > Built on top of [ai110-module2show-pawpal-starter](https://github.com/abhishek-dhall/ai110-module2show-pawpal-starter), which established the four-class scheduling backend (`Task`, `Pet`, `Owner`, `Scheduler`) and a working Streamlit UI. This final project extends that foundation with an AI-powered care advisor, smarter conflict detection, group walk recognition, and persistent user profiles.
 
-**PawPal+** is a Streamlit app that helps a pet owner stay consistent with daily pet care. Add your pets, schedule their tasks, and get a conflict-checked priority schedule — then ask the built-in AI advisor questions about your pets' day in plain English.
+**PawPal+** is a pet care scheduling app for owners with multiple pets. It builds a conflict-checked daily schedule across all your animals, spots problems before they happen — two pets booked at the same time, a walk that runs into a vet appointment — and lets you ask a built-in AI advisor plain-English questions about your pets' day. Your profile saves between sessions, so there is no setup the second time you open it.
 
 ---
 
 ## What it does
 
-- **Saved user profiles** — Owner and pet data loads from `data/users.json` at startup. One click restores your full profile — no re-entering names every session.
-- **Collapsible setup sections** — Step 2 (Add a Pet) and Step 3 (Add a Task) collapse automatically once data is loaded, keeping the schedule views front and centre. Step 2 shows how many pets are saved in the header; Step 3 shows the total task count. Either section can be expanded any time to add or edit.
-- **Owner setup** — Enter your name once; the app locks it in and greets you by name for the rest of the session.
-- **Multi-pet support** — Add as many pets as you like (dogs, cats, rabbits, birds, fish, hamsters, or other). Each pet has its own task list.
-- **Task scheduling** — Add tasks with a name, time (HH:MM), duration, priority, and frequency (once / daily / weekly). Duplicate tasks at the same time are blocked automatically.
-- **Delete tasks** — Remove any task directly from the task list — the primary way to resolve a scheduling conflict.
-- **Exact conflict detection** — Tasks that share the same time slot are flagged in **orange ⚠** in both the task list and the generated schedule.
-- **Duration-overlap detection** — Tasks whose time windows overlap (even with different start times) are also flagged — e.g. a 60-min walk at 07:30 and a vet at 08:00 are caught.
-- **Group walk recognition** — When two or more pets of the same species both have a walk scheduled at the same time, the rows are highlighted in **blue 🐾** instead of orange — cooperative scheduling, not a conflict.
-- **Recurring tasks** — Daily and weekly tasks automatically generate the next occurrence when marked complete.
-- **Daily schedule (Step 4)** — The core view: one click shows only today's tasks sorted by priority then time, with conflict and group walk highlighting. No date column needed — everything is happening today.
-- **Weekly schedule (Step 5, additional feature)** — An enhanced view that shows all tasks across the week: daily tasks on today's date, weekly tasks placed on the next Saturday. Each row shows the date so you can plan ahead. Sorted by date first, then priority.
-- **Priority-first schedule** — One click generates a full cross-pet schedule sorted by priority (high → medium → low), then by time within each tier.
-- **Smart emoji labels** — Pet names show a species icon (🐕 🐈 🐇 🦜 🐠 🐹); task names show a type icon (🚶 walk, 🍽️ feed, 💊 meds, 🏥 vet, ✂️ groom, 🎾 play) inferred from the task name.
-- **AI Care Advisor** — Ask natural-language questions about your pets' schedule and get answers grounded in your actual data, powered by Claude.
+### 📅 Scheduling
+
+PawPal+ treats every pet's routine as a first-class schedule. Add tasks with a name, time, duration, priority (high / medium / low), and frequency (once / daily / weekly), and the app does the rest.
+
+- **Daily view** — One click shows only today's tasks sorted by priority then time. High-priority items surface first so nothing urgent gets buried under routine chores.
+- **Weekly view** — An expanded view places daily tasks on today's date and weekly tasks (grooming, vet checkups) on their next occurrence, giving you a full picture of the week ahead.
+- **Recurring tasks** — Mark a task complete and the next occurrence is created automatically — tomorrow for daily tasks, seven days out for weekly ones. One-time tasks disappear after completion.
+- **Downloadable schedules** — Generate a clean HTML schedule for any view and download it as a printable file — the kind of thing you tape to the fridge.
+
+### ⚠️ Conflict detection
+
+Scheduling multiple pets by hand is error-prone. PawPal+ runs two conflict detectors on every update and renders results in three distinct states so you always know what you're looking at.
+
+- **Exact conflict → orange ⚠** — Two tasks sharing the same time slot are flagged immediately, with both pet names in the warning so you know exactly what to fix.
+- **Duration-overlap → orange ⚠** — A 30-min walk at 07:30 and a vet appointment at 08:00 overlap even though their start times differ. PawPal+ catches this too, not just exact clashes.
+- **Group walk → blue 🐾** — Two dogs both scheduled for a morning walk at 07:00 is not a conflict — it's good planning. Same-species pets with a walk at the same slot are highlighted blue instead of orange, with no warning to resolve.
+- **Inline edit to resolve** — Click ✏️ on any task to change its time directly in the row. No need to delete and re-add just to shift a feeding by 15 minutes.
+
+### 🤖 AI Care Advisor
+
+The advisor answers natural-language questions about your pets' schedule using your actual data — not generic advice. It knows your pets' names, their tasks, what's overdue, and what conflicts exist right now.
+
+- **Grounded answers** — Every question is answered using the live schedule as context. Ask *"What's most urgent for Chintu today?"* and the response references Chintu's real tasks and times, not a template.
+- **Conflict-aware** — The advisor sees the same conflict data the UI shows, so it can explain what's overlapping and suggest specific fixes (e.g. "move Pintu's feeding to 07:45").
+- **Interaction log** — Every question and answer is saved to `logs/advisor_log.txt` with a timestamp, giving you a record of advice over time.
+- **Evaluation harness** — `eval_advisor.py` runs 5 predefined questions and checks each response for expected keywords, verifying the advisor stays grounded as the schedule changes.
+
+### ✨ Setup & usability
+
+- **Saved profiles** — Owner and pet data persists in `data/users.json`. One click at startup restores everything — no re-entering names or pets each session.
+- **Collapsible setup** — The Add a Pet and Add a Task panels collapse once your data is loaded, so the daily schedule is front and centre when you open the app. Expand either panel any time to make changes.
+- **Smart emoji labels** — Species icons (🐕 🐈 🐇 🦜 🐠 🐹) and task-type icons (🚶 walk, 🍽️ feed, 💊 meds, 🏥 vet, ✂️ groom, 🎾 play) are inferred automatically from pet species and task name — no manual tagging needed.
 
 ---
 
@@ -104,60 +121,27 @@ feedings by 15–30 minutes.
 
 ## 🧪 Testing
 
-Run the full test suite from the project root:
-
 ```bash
 python -m pytest tests/test_pawpal.py -v
 ```
 
-**What the tests cover:**
-- **Sorting correctness** — tasks return in chronological HH:MM order; priority sort puts high before medium before low
-- **Exact conflict detection** — duplicate time slots flagged with pet names in the message (e.g. `'Feeding' (Pintu) and 'Feeding' (Chinni)`)
-- **Duration-overlap detection** — overlapping windows caught even with different start times; touching-but-not-overlapping tasks are not flagged
-- **Group walk recognition** — same-species pets with a walk at the same slot → group walk; different-species or different-time walks → not flagged
-- **Recurrence logic** — daily/weekly tasks create the next occurrence after completion; `once` tasks do not
-- **Filter by status** — only incomplete (or complete) tasks are returned
-- **Filter by pet** — name matching is case-insensitive
-- **Task removal** — `remove_task()` returns `True` on success and `False` when name/time doesn't match
-- **Edge cases** — empty pet, already-completed task, no match on pet filter, different dates don't cause false overlaps
-
 ```
-$ python -m pytest tests/test_pawpal.py -v
-============================= test session starts =============================
-platform win32 -- Python 3.14.2, pytest-9.1.1, pluggy-1.6.0
-collected 25 items
-
-tests/test_pawpal.py::test_task_mark_complete PASSED                     [  4%]
-tests/test_pawpal.py::test_pet_task_count_increases_on_add PASSED        [  8%]
-tests/test_pawpal.py::test_sort_by_time_orders_chronologically PASSED    [ 12%]
-tests/test_pawpal.py::test_sort_by_time_empty_pet PASSED                 [ 16%]
-tests/test_pawpal.py::test_detect_conflicts_same_time_flags_warning PASSED [ 20%]
-tests/test_pawpal.py::test_detect_conflicts_different_times_no_warning PASSED [ 24%]
-tests/test_pawpal.py::test_handle_recurrence_daily_creates_next_day PASSED [ 28%]
-tests/test_pawpal.py::test_handle_recurrence_weekly_creates_seven_days_later PASSED [ 32%]
-tests/test_pawpal.py::test_handle_recurrence_once_does_not_add_task PASSED [ 36%]
-tests/test_pawpal.py::test_filter_by_status_returns_only_incomplete PASSED [ 40%]
-tests/test_pawpal.py::test_filter_by_pet_case_insensitive PASSED         [ 44%]
-tests/test_pawpal.py::test_mark_complete_twice_stays_true PASSED         [ 48%]
-tests/test_pawpal.py::test_handle_recurrence_not_complete_does_nothing PASSED [ 52%]
-tests/test_pawpal.py::test_filter_by_pet_no_match_returns_empty PASSED   [ 56%]
-tests/test_pawpal.py::test_detect_conflicts_message_includes_pet_names PASSED [ 60%]
-tests/test_pawpal.py::test_detect_group_walks_same_species_returns_result PASSED [ 64%]
-tests/test_pawpal.py::test_detect_group_walks_different_species_not_a_group_walk PASSED [ 68%]
-tests/test_pawpal.py::test_detect_group_walks_single_pet_not_a_group_walk PASSED [ 72%]
-tests/test_pawpal.py::test_detect_group_walks_same_species_different_times_no_result PASSED [ 76%]
-tests/test_pawpal.py::test_detect_overlap_conflicts_catches_overlapping_windows PASSED [ 80%]
-tests/test_pawpal.py::test_detect_overlap_conflicts_sequential_tasks_no_warning PASSED [ 84%]
-tests/test_pawpal.py::test_detect_overlap_conflicts_different_dates_no_warning PASSED [ 88%]
-tests/test_pawpal.py::test_sort_by_priority_then_time_high_before_medium_before_low PASSED [ 92%]
-tests/test_pawpal.py::test_remove_task_returns_true_and_decreases_count PASSED [ 96%]
-tests/test_pawpal.py::test_remove_task_nonexistent_returns_false PASSED  [100%]
-
 ============================= 25 passed in 0.10s ==============================
 ```
 
-**Confidence level: ⭐⭐⭐⭐⭐ (5/5)**
-All core scheduling behaviors are tested, including the two new Scheduler methods. AI advisor responses are verified manually via live interaction logs in `logs/advisor_log.txt`.
+**25 / 25 passing** (target: 20+ ✓). The two new Scheduler methods added in this project — `detect_group_walks()` and `detect_overlap_conflicts()` — each have 3–4 dedicated test cases covering the positive case, the negative case, and edge cases.
+
+**What the tests cover:**
+- **Sorting** — chronological HH:MM order; priority sort (high → medium → low), time as tiebreaker
+- **Exact conflict detection** — duplicate time slots flagged with both pet names (e.g. `'Feeding' (Pintu) and 'Feeding' (Chinni)`)
+- **Duration-overlap detection** — overlapping time windows caught even with different start times; touching-but-not-overlapping tasks are not flagged
+- **Group walk recognition** — same-species + walk at same slot → group walk; different species or different time → not flagged
+- **Recurrence** — daily/weekly tasks create next occurrence after completion; `once` tasks do not
+- **Filter by status and by pet** — case-insensitive; returns empty list on no match
+- **Task removal** — `remove_task()` returns `True` on match, `False` when name or time doesn't match
+- **Edge cases** — empty pet list, already-completed task, different-date tasks that share a time do not false-alarm
+
+AI advisor responses are verified via `eval_advisor.py` (keyword-check harness, 5/5 passing) and `logs/advisor_log.txt` (timestamped interaction log) rather than unit tests — LLM output is non-deterministic and checked by behaviour, not exact string match.
 
 ---
 
@@ -285,16 +269,6 @@ UML diagrams: [`diagrams/uml.mmd`](diagrams/uml.mmd) (initial design) and [`diag
 
 ---
 
-## 📊 Testing Summary
-
-```
-============================= 25 passed in 0.10s ==============================
-```
-
-**25 / 25 tests passing** (target: 20+ ✓). Core scheduling logic (sort, filter, conflict detection, recurrence) is fully covered by automated tests. The two new Scheduler methods (`detect_group_walks`, `detect_overlap_conflicts`) each have 3–4 dedicated test cases covering the positive case, negative cases, and edge cases. AI advisor responses are not unit-tested — they are verified manually through the interaction log at `logs/advisor_log.txt`.
-
----
-
 ## 🛡️ Reliability & Guardrails
 
 The system includes three layers of reliability protection.
@@ -336,7 +310,7 @@ Full 5/5 eval run is shown in the [Stretch Features](#-stretch-features) section
 
 ## 🚀 Stretch Features
 
-### RAG-Powered Context (implemented — +2 points)
+### RAG-Powered Context
 
 The AI advisor uses **Retrieval-Augmented Generation (RAG)** to ground every response in the owner's live schedule. Rather than answering from general pet-care knowledge, the system builds a structured context block at query time and injects it into the Claude prompt as the user message preamble:
 
@@ -356,7 +330,7 @@ Scheduling conflicts detected:
 
 The model is told to answer only from this context, not from general knowledge. This means responses reference real pet names, real times, and real conflicts — not generic advice.
 
-### AI Advisor Test Harness (implemented — +2 points)
+### AI Advisor Test Harness
 
 `eval_advisor.py` is an automated evaluation script that runs the live advisor against 5 pre-defined questions and checks each response for expected keywords. It loads the real user profile, calls `ask_advisor()`, and prints a pass/fail scored summary.
 
