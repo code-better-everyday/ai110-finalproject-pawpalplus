@@ -238,9 +238,7 @@ Shows all tasks across the week — daily tasks on today's date, weekly tasks on
 **Step 6 — Ask your AI advisor**
 Type a plain-English question. The advisor reads your current schedule and responds with grounded, specific advice.
 
-```
-[TODO: add screenshot of Step 5 after ai_advisor.py is wired to app.py]
-```
+![AI advisor answering a scheduling question](demo/7-ai-advisor-response.png)
 
 ---
 
