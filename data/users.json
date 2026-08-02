@@ -3,9 +3,39 @@
     {
       "name": "Abhishek",
       "pets": [
-        {"name": "Chintu", "species": "dog"},
-        {"name": "Pintu",  "species": "dog"},
-        {"name": "Chinni", "species": "cat"}
+        {
+          "name": "Chintu",
+          "species": "dog",
+          "tasks": [
+            {"name": "Morning Walk",     "scheduled_time": "07:00", "duration_minutes": 30, "priority": "high",   "frequency": "daily"},
+            {"name": "Feeding",          "scheduled_time": "07:30", "duration_minutes": 10, "priority": "high",   "frequency": "daily"},
+            {"name": "Grooming",         "scheduled_time": "10:00", "duration_minutes": 45, "priority": "medium", "frequency": "weekly"},
+            {"name": "Flea & Tick Meds", "scheduled_time": "12:00", "duration_minutes":  5, "priority": "medium", "frequency": "weekly"},
+            {"name": "Evening Walk",     "scheduled_time": "18:00", "duration_minutes": 25, "priority": "high",   "frequency": "daily"}
+          ]
+        },
+        {
+          "name": "Pintu",
+          "species": "dog",
+          "tasks": [
+            {"name": "Morning Walk", "scheduled_time": "07:00", "duration_minutes": 30, "priority": "high", "frequency": "daily"},
+            {"name": "Feeding",      "scheduled_time": "08:00", "duration_minutes": 10, "priority": "high", "frequency": "daily"},
+            {"name": "Vet Checkup",  "scheduled_time": "10:30", "duration_minutes": 60, "priority": "high", "frequency": "once"},
+            {"name": "Play Time",    "scheduled_time": "16:00", "duration_minutes": 20, "priority": "low",  "frequency": "daily"},
+            {"name": "Evening Walk", "scheduled_time": "18:00", "duration_minutes": 25, "priority": "high", "frequency": "daily"}
+          ]
+        },
+        {
+          "name": "Chinni",
+          "species": "cat",
+          "tasks": [
+            {"name": "Feeding",           "scheduled_time": "08:00", "duration_minutes": 10, "priority": "high",   "frequency": "daily"},
+            {"name": "Litter Box Clean",  "scheduled_time": "09:30", "duration_minutes": 10, "priority": "medium", "frequency": "daily"},
+            {"name": "Brushing",          "scheduled_time": "15:00", "duration_minutes": 15, "priority": "low",    "frequency": "weekly"},
+            {"name": "Play & Enrichment", "scheduled_time": "20:00", "duration_minutes": 15, "priority": "low",    "frequency": "daily"},
+            {"name": "Vet Checkup",       "scheduled_time": "14:00", "duration_minutes": 45, "priority": "high",   "frequency": "once"}
+          ]
+        }
       ]
     }
   ]
