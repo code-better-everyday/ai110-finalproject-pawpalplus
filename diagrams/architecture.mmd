@@ -1,0 +1,56 @@
+flowchart TD
+    subgraph Input
+        U([👤 Pet Owner])
+        J[(data/users.json)]
+    end
+
+    subgraph UI["app.py — Streamlit UI"]
+        S1[Step 1: Owner Setup]
+        S2[Step 2: Add a Pet]
+        S3[Step 3: Add Tasks\n✏️ Edit · ✅ Complete · 🗑 Delete]
+        S4[Step 4: Daily Schedule]
+        S5[Step 5: Weekly Schedule]
+        S6[Step 6: AI Advisor]
+    end
+
+    subgraph Backend["pawpal_system.py — Scheduler"]
+        SC1[sort_by_priority_then_time]
+        SC2[detect_conflicts]
+        SC3[detect_overlap_conflicts]
+        SC4[detect_group_walks]
+        SC5[handle_recurrence]
+        SC6[filter_by_status / filter_by_pet]
+    end
+
+    subgraph AI["ai_advisor.py"]
+        CTX[build_context\nowner schedule → text]
+        API[Claude API\nclaude-haiku-4-5-20251001]
+        LOG[(logs/advisor_log.txt)]
+    end
+
+    subgraph Output
+        PDF[📄 HTML Schedule\nPrintable PDF]
+        ANS[💬 AI Answer]
+    end
+
+    subgraph Tests["tests/test_pawpal.py"]
+        T[25 pytest tests]
+    end
+
+    U -->|enters name| S1
+    J -->|load saved profile| S1
+    S1 --> S2 --> S3 --> S4
+    S3 --> S5
+    S4 -->|generate| SC1
+    S4 -->|conflicts| SC2
+    S4 -->|overlaps| SC3
+    S4 -->|group walks| SC4
+    S3 -->|mark complete| SC5
+    S5 -->|generate| SC1
+    S4 -->|download| PDF
+    S5 -->|download| PDF
+    S6 -->|question| CTX
+    CTX -->|prompt + context| API
+    API -->|answer| ANS
+    API --> LOG
+    T -->|covers| Backend

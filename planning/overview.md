@@ -157,6 +157,42 @@ Work through these in order — each builds on the last:
 
 ---
 
+## Session Log — 2026-07-31 (Day 2)
+
+### ✅ Done today
+
+| # | What | File(s) touched |
+|---|------|----------------|
+| 1 | 3-state conflict rendering — group walks shown in blue 🐾, real conflicts in orange ⚠ | `app.py`, `pawpal_system.py` |
+| 2 | Conflict messages now include pet names — "Feeding (Pintu) and Feeding (Chinni)" | `pawpal_system.py` |
+| 3 | Today's date added to Step 4 daily schedule header | `app.py` |
+| 4 | Weekly schedule (Step 5) added — daily tasks on today, weekly on next Saturday, once tasks 3 business days out | `app.py` |
+| 5 | Both schedules stay on screen simultaneously via `show_daily` / `show_weekly` session flags | `app.py` |
+| 6 | Step 2 (Add a Pet) and Step 3 (Add a Task) made collapsible with counts in expander headers | `app.py` |
+| 7 | Test suite extended from 14 to 25 tests, all passing | `tests/test_pawpal.py` |
+| 8 | `ai_advisor.py` built — RAG context builder, Claude API call (`claude-haiku-4-5-20251001`), interaction logger | `ai_advisor.py` |
+| 9 | AI advisor wired into app as Step 6 | `app.py` |
+| 10 | `model_card.md` created with 3 flawed AI suggestions, 1 helpful suggestion, system limitations | `model_card.md` |
+| 11 | README updated — testing section filled with real pytest output, Design Decisions expanded | `README.md` |
+| 12 | ✅ Mark-complete button per task in Step 3, Step 4 (daily), and Step 5 (weekly) — grey strikethrough on completion, recurrence triggered | `app.py` |
+| 13 | "X/Y done" counts per pet in daily and weekly schedule headers | `app.py` |
+| 14 | 📄 Download schedule button (HTML → printable PDF) added inline next to each generate button | `app.py` |
+| 15 | Model card updated with third flawed AI case: over-engineering completion UI vs. preserving readable HTML table | `model_card.md` |
+
+### 📋 Remaining Before Submission (revisit tomorrow)
+
+| Priority | Task |
+|----------|------|
+| HIGH | Run app with real API key → ask 3 questions → paste outputs into README `[TODO]` blocks |
+| HIGH | Create public GitHub repo, push, verify commit history is meaningful and multiple |
+| HIGH | Final smoke test: all 6 steps end-to-end, 25 tests green |
+| HIGH | Check every box in `planning/submission_checklist.md` |
+| MED | `diagrams/architecture.mmd` — Mermaid flowchart of system architecture |
+| MED | Update `diagrams/uml_final.mmd` with new Scheduler methods |
+| LOW | Demo screenshot of Step 6 (AI advisor) for README |
+
+---
+
 ## What's Unchanged from Module 2
 
 - `Task`, `Pet`, `Owner`, `Scheduler` core classes — keep as-is

@@ -10,6 +10,7 @@
 ## What it does
 
 - **Saved user profiles** — Owner and pet data loads from `data/users.json` at startup. One click restores your full profile — no re-entering names every session.
+- **Collapsible setup sections** — Step 2 (Add a Pet) and Step 3 (Add a Task) collapse automatically once data is loaded, keeping the schedule views front and centre. Step 2 shows how many pets are saved in the header; Step 3 shows the total task count. Either section can be expanded any time to add or edit.
 - **Owner setup** — Enter your name once; the app locks it in and greets you by name for the rest of the session.
 - **Multi-pet support** — Add as many pets as you like (dogs, cats, rabbits, birds, fish, hamsters, or other). Each pet has its own task list.
 - **Task scheduling** — Add tasks with a name, time (HH:MM), duration, priority, and frequency (once / daily / weekly). Duplicate tasks at the same time are blocked automatically.
@@ -18,6 +19,8 @@
 - **Duration-overlap detection** — Tasks whose time windows overlap (even with different start times) are also flagged — e.g. a 60-min walk at 07:30 and a vet at 08:00 are caught.
 - **Group walk recognition** — When two or more pets of the same species both have a walk scheduled at the same time, the rows are highlighted in **blue 🐾** instead of orange — cooperative scheduling, not a conflict.
 - **Recurring tasks** — Daily and weekly tasks automatically generate the next occurrence when marked complete.
+- **Daily schedule (Step 4)** — The core view: one click shows only today's tasks sorted by priority then time, with conflict and group walk highlighting. No date column needed — everything is happening today.
+- **Weekly schedule (Step 5, additional feature)** — An enhanced view that shows all tasks across the week: daily tasks on today's date, weekly tasks placed on the next Saturday. Each row shows the date so you can plan ahead. Sorted by date first, then priority.
 - **Priority-first schedule** — One click generates a full cross-pet schedule sorted by priority (high → medium → low), then by time within each tier.
 - **Smart emoji labels** — Pet names show a species icon (🐕 🐈 🐇 🦜 🐠 🐹); task names show a type icon (🚶 walk, 🍽️ feed, 💊 meds, 🏥 vet, ✂️ groom, 🎾 play) inferred from the task name.
 - **AI Care Advisor** — Ask natural-language questions about your pets' schedule and get answers grounded in your actual data, powered by Claude.
@@ -50,17 +53,51 @@ streamlit run app.py          # opens http://localhost:8501
 
 **Q: What's most urgent for my dogs today?**
 ```
-[TODO: paste real output here after ai_advisor.py is built]
+Based on your schedule, here are the high-priority tasks due today for Chintu and Pintu:
+
+Daily High-Priority Tasks:
+1. Morning Walk – 07:00 (30 min) – Both dogs
+2. Feeding – 07:30 (Chintu) & 08:00 (Pintu) – 10 min each
+3. Evening Walk – 18:00 (25 min) – Both dogs
+
+Good news: You can do the morning and evening walks together since both dogs need them at the same time!
+
+Upcoming High-Priority:
+- Pintu's Vet Checkup – due 2026-08-05 at 10:30 (60 min)
+
+The daily walks and feeding are your most time-sensitive items today.
 ```
 
 **Q: Can Chintu and Pintu do their morning walk together?**
 ```
-[TODO: paste real output here after ai_advisor.py is built]
+Yes! Chintu and Pintu can do their morning walk together. Both are scheduled for a
+morning walk at 07:00 for 30 minutes on a daily basis. Since they're both dogs,
+a group walk is practical and efficient. This would actually resolve the scheduling
+conflict at that time slot.
+
+Suggestion: Schedule them as a combined "Morning Walk (Chintu & Pintu)" at 07:00
+for 30 minutes daily instead of two separate tasks.
 ```
 
-**Q: Help me fix a scheduling conflict at 08:00**
+**Q: Are there any scheduling conflicts I should fix?**
 ```
-[TODO: paste real output here after ai_advisor.py is built]
+Yes, there are 3 scheduling conflicts to address:
+
+1. 07:00 – Morning Walk (Chintu & Pintu)
+   Both dogs are scheduled simultaneously for 30 minutes.
+   Fix: This is actually fine! A group walk with both dogs together works well.
+
+2. 18:00 – Evening Walk (Chintu & Pintu)
+   Both dogs scheduled simultaneously for 25 minutes.
+   Fix: Again, a group walk works here too.
+
+3. 08:00 – Feeding (Pintu & Chinni)
+   Pintu (dog) and Chinni (cat) feeding overlap.
+   Fix: Move one feeding time — shift Pintu's feeding to 07:45 (right after his
+   morning walk ends at 07:30) or Chinni's feeding to 08:15.
+
+Summary: The dog walks can stay as group walks, but adjust one of the 08:00
+feedings by 15–30 minutes.
 ```
 
 ---
@@ -74,18 +111,49 @@ python -m pytest tests/test_pawpal.py -v
 ```
 
 **What the tests cover:**
-- **Sorting correctness** — tasks return in chronological HH:MM order
-- **Exact conflict detection** — duplicate time slots are flagged with a warning
-- **Duration-overlap detection** — tasks whose windows overlap are caught even with different start times
-- **Group walk recognition** — same-species pets with walk tasks at the same slot return a group walk, not a conflict
+- **Sorting correctness** — tasks return in chronological HH:MM order; priority sort puts high before medium before low
+- **Exact conflict detection** — duplicate time slots flagged with pet names in the message (e.g. `'Feeding' (Pintu) and 'Feeding' (Chinni)`)
+- **Duration-overlap detection** — overlapping windows caught even with different start times; touching-but-not-overlapping tasks are not flagged
+- **Group walk recognition** — same-species pets with a walk at the same slot → group walk; different-species or different-time walks → not flagged
 - **Recurrence logic** — daily/weekly tasks create the next occurrence after completion; `once` tasks do not
 - **Filter by status** — only incomplete (or complete) tasks are returned
 - **Filter by pet** — name matching is case-insensitive
-- **Edge cases** — empty pet, already-completed task, no match on pet filter
+- **Task removal** — `remove_task()` returns `True` on success and `False` when name/time doesn't match
+- **Edge cases** — empty pet, already-completed task, no match on pet filter, different dates don't cause false overlaps
 
 ```
-[TODO: paste updated pytest -v output here after new tests are written]
-Expected: 20+ tests, all passing
+$ python -m pytest tests/test_pawpal.py -v
+============================= test session starts =============================
+platform win32 -- Python 3.14.2, pytest-9.1.1, pluggy-1.6.0
+collected 25 items
+
+tests/test_pawpal.py::test_task_mark_complete PASSED                     [  4%]
+tests/test_pawpal.py::test_pet_task_count_increases_on_add PASSED        [  8%]
+tests/test_pawpal.py::test_sort_by_time_orders_chronologically PASSED    [ 12%]
+tests/test_pawpal.py::test_sort_by_time_empty_pet PASSED                 [ 16%]
+tests/test_pawpal.py::test_detect_conflicts_same_time_flags_warning PASSED [ 20%]
+tests/test_pawpal.py::test_detect_conflicts_different_times_no_warning PASSED [ 24%]
+tests/test_pawpal.py::test_handle_recurrence_daily_creates_next_day PASSED [ 28%]
+tests/test_pawpal.py::test_handle_recurrence_weekly_creates_seven_days_later PASSED [ 32%]
+tests/test_pawpal.py::test_handle_recurrence_once_does_not_add_task PASSED [ 36%]
+tests/test_pawpal.py::test_filter_by_status_returns_only_incomplete PASSED [ 40%]
+tests/test_pawpal.py::test_filter_by_pet_case_insensitive PASSED         [ 44%]
+tests/test_pawpal.py::test_mark_complete_twice_stays_true PASSED         [ 48%]
+tests/test_pawpal.py::test_handle_recurrence_not_complete_does_nothing PASSED [ 52%]
+tests/test_pawpal.py::test_filter_by_pet_no_match_returns_empty PASSED   [ 56%]
+tests/test_pawpal.py::test_detect_conflicts_message_includes_pet_names PASSED [ 60%]
+tests/test_pawpal.py::test_detect_group_walks_same_species_returns_result PASSED [ 64%]
+tests/test_pawpal.py::test_detect_group_walks_different_species_not_a_group_walk PASSED [ 68%]
+tests/test_pawpal.py::test_detect_group_walks_single_pet_not_a_group_walk PASSED [ 72%]
+tests/test_pawpal.py::test_detect_group_walks_same_species_different_times_no_result PASSED [ 76%]
+tests/test_pawpal.py::test_detect_overlap_conflicts_catches_overlapping_windows PASSED [ 80%]
+tests/test_pawpal.py::test_detect_overlap_conflicts_sequential_tasks_no_warning PASSED [ 84%]
+tests/test_pawpal.py::test_detect_overlap_conflicts_different_dates_no_warning PASSED [ 88%]
+tests/test_pawpal.py::test_sort_by_priority_then_time_high_before_medium_before_low PASSED [ 92%]
+tests/test_pawpal.py::test_remove_task_returns_true_and_decreases_count PASSED [ 96%]
+tests/test_pawpal.py::test_remove_task_nonexistent_returns_false PASSED  [100%]
+
+============================= 25 passed in 0.10s ==============================
 ```
 
 **Confidence level: ⭐⭐⭐⭐⭐ (5/5)**
@@ -104,6 +172,8 @@ All core scheduling behaviors are tested, including the two new Scheduler method
 | Exact conflict detection | `Scheduler.detect_conflicts()` | Flags tasks sharing the same scheduled_time + due_date |
 | Duration-overlap detection | `Scheduler.detect_overlap_conflicts()` | Flags tasks whose time windows overlap even with different start times |
 | Group walk recognition | `Scheduler.detect_group_walks()` | Same-species pets with walk tasks at the same slot → blue 🐾 badge |
+| Daily schedule | Step 4 in `app.py` | Filters to today's tasks only — the primary daily-use view |
+| Weekly schedule | Step 5 in `app.py` (additional feature) | All tasks with Date column; weekly tasks placed on next Saturday |
 | Recurring tasks | `Scheduler.handle_recurrence(task, pet)` | Daily +1 day; weekly +7 days; `once` tasks not re-created |
 | Delete a task | `Pet.remove_task(name, scheduled_time)` | Removes by name + time match; primary conflict resolution path |
 | Orange conflict highlight | UI — `app.py` | Conflicting rows in orange bold ⚠ in task list and schedule |
@@ -155,10 +225,13 @@ Click **Delete** next to a conflicting task. The highlight clears instantly.
 
 ---
 
-**Step 4 — Generate the schedule**
-One click produces the full cross-pet schedule sorted by priority first, then time. Conflicting rows stay orange; group walk rows show blue.
+**Step 4 — Generate today's schedule**
+One click filters to tasks due today and produces a clean daily view sorted by priority then time. Conflicting rows stay orange; group walk rows show blue. No date column needed — everything is today.
 
-**Step 5 — Ask your AI advisor**
+**Step 5 — Generate the weekly schedule**
+Shows all tasks across the week — daily tasks on today's date, weekly tasks on the next Saturday — with a Date column so you can see at a glance what's coming up. Sorted by date first, then priority.
+
+**Step 6 — Ask your AI advisor**
 Type a plain-English question. The advisor reads your current schedule and responds with grounded, specific advice.
 
 ```
@@ -182,10 +255,8 @@ Type a plain-English question. The advisor reads your current schedule and respo
 
 ### System overview
 
-```
-[TODO: embed architecture PNG here after diagrams/architecture.mmd is exported]
-See full Mermaid source: diagrams/architecture.mmd
-```
+Full Mermaid source: [`diagrams/architecture.mmd`](diagrams/architecture.mmd)
+Full UML class diagram: [`diagrams/uml_final.mmd`](diagrams/uml_final.mmd)
 
 Five modules work together:
 
@@ -206,6 +277,7 @@ UML diagrams: [`diagrams/uml.mmd`](diagrams/uml.mmd) (initial design) and [`diag
 - **HH:MM string for time, not datetime** — Keeps the data model simple and lets Python's default string sort order handle chronological sorting correctly for times within a single day. A full `datetime` object would be necessary for multi-day scheduling but adds complexity that isn't needed here.
 - **JSON for user profiles, not a database** — A flat JSON file is readable, version-controllable, and has zero infrastructure dependencies. For a single-user scheduling tool, a database would be over-engineering.
 - **Two conflict detectors, not one** — `detect_conflicts()` (exact match) was in Module 2 and all its tests pass. `detect_overlap_conflicts()` was added as an enhancement without touching the original — they run side by side, each catching what the other misses.
+- **3-state rendering, not binary conflict/no-conflict** — The initial AI-generated implementation flagged any two tasks sharing a time slot as a conflict (orange ⚠). Human review caught that two dogs walking together at the same time is cooperative scheduling, not a problem. This required a third state — blue 🐾 for group walks — and a new `detect_group_walks()` method. The AI's purely mechanical approach needed domain knowledge from the human to get right. Full write-up in [`model_card.md`](model_card.md).
 - **Claude Haiku for the AI advisor** — Fast response times and low cost make it practical for interactive Q&A in a scheduling tool. The context window is small enough (one owner's schedule) that a larger model adds no benefit.
 - **RAG via in-memory context, not a vector store** — The owner's full schedule is small enough to format as plain text and inject directly into the prompt. A vector database would be necessary only if the context grew to thousands of tasks.
 
@@ -214,10 +286,10 @@ UML diagrams: [`diagrams/uml.mmd`](diagrams/uml.mmd) (initial design) and [`diag
 ## 📊 Testing Summary
 
 ```
-[TODO: paste final pytest -v output here after all tests are written]
+============================= 25 passed in 0.10s ==============================
 ```
 
-**X / Y tests passing** (target: 20+). Core scheduling logic (sort, filter, conflict detection, recurrence) is fully covered by automated tests. The two new Scheduler methods (`detect_group_walks`, `detect_overlap_conflicts`) each have dedicated test cases. AI advisor responses are not unit-tested — they are verified manually through the interaction log at `logs/advisor_log.txt`.
+**25 / 25 tests passing** (target: 20+ ✓). Core scheduling logic (sort, filter, conflict detection, recurrence) is fully covered by automated tests. The two new Scheduler methods (`detect_group_walks`, `detect_overlap_conflicts`) each have 3–4 dedicated test cases covering the positive case, negative cases, and edge cases. AI advisor responses are not unit-tested — they are verified manually through the interaction log at `logs/advisor_log.txt`.
 
 ---
 

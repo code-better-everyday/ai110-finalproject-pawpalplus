@@ -35,6 +35,8 @@ classDiagram
         +filter_by_status(completed: bool) list
         +filter_by_pet(pet_name: str) list
         +detect_conflicts() list
+        +detect_overlap_conflicts() list
+        +detect_group_walks() list
         +handle_recurrence(task: Task, pet: Pet) None
     }
 
