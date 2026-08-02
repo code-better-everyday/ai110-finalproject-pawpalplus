@@ -295,6 +295,82 @@ UML diagrams: [`diagrams/uml.mmd`](diagrams/uml.mmd) (initial design) and [`diag
 
 ---
 
+## 🚀 Stretch Features
+
+### RAG-Powered Context (implemented — +2 points)
+
+The AI advisor uses **Retrieval-Augmented Generation (RAG)** to ground every response in the owner's live schedule. Rather than answering from general pet-care knowledge, the system builds a structured context block at query time and injects it into the Claude prompt as the user message preamble:
+
+```
+Today's date: Sunday, August 02, 2026
+Owner: Abhishek
+Pets: Chintu (dog), Pintu (dog), Chinni (cat)
+
+Chintu's tasks:
+  - Morning Walk at 07:00 (30 min, high priority, daily, due 2026-08-02)
+  - Feeding at 07:30 (10 min, high priority, daily, due 2026-08-02)
+  ...
+
+Scheduling conflicts detected:
+  - Overlap: Feeding (Pintu) and Feeding (Chinni) at 08:00 on 2026-08-02
+```
+
+The model is told to answer only from this context, not from general knowledge. This means responses reference real pet names, real times, and real conflicts — not generic advice.
+
+### AI Advisor Test Harness (implemented — +2 points)
+
+`eval_advisor.py` is an automated evaluation script that runs the live advisor against 5 pre-defined questions and checks each response for expected keywords. It loads the real user profile, calls `ask_advisor()`, and prints a pass/fail scored summary.
+
+Run it from the project root:
+
+```bash
+python eval_advisor.py
+```
+
+**Eval output (2026-08-02 run):**
+
+```
+============================================================
+PawPal+ AI Advisor — Evaluation Harness
+============================================================
+Profile loaded: Abhishek — 3 pets, 15 tasks
+
+Test 1: Identifies high-priority dog tasks with pet names
+  Q: What is most urgent for my dogs today?
+  PASS — keywords matched: ['chintu', 'pintu', 'walk', 'feeding', 'high']
+
+Test 2: Recognises group walk opportunity at 07:00
+  Q: Can Chintu and Pintu do their morning walk together?
+  PASS — keywords matched: ['together', '07:00', 'group']
+
+Test 3: Identifies the 08:00 feeding conflict with pet names
+  Q: Are there any scheduling conflicts I should fix?
+  PASS — keywords matched: ['08:00', 'feeding', 'pintu', 'chinni']
+
+Test 4: Returns Chinni's specific tasks
+  Q: What tasks are scheduled for Chinni today?
+  PASS — keywords matched: ['chinni', 'feeding', 'litter']
+
+Test 5: Finds upcoming vet appointments across pets
+  Q: Which pet has a vet appointment coming up?
+  PASS — keywords matched: ['vet', 'pintu', 'chinni']
+
+============================================================
+Results: 5/5 passed
+
+  ✓  Identifies high-priority dog tasks with pet names
+  ✓  Recognises group walk opportunity at 07:00
+  ✓  Identifies the 08:00 feeding conflict with pet names
+  ✓  Returns Chinni's specific tasks
+  ✓  Finds upcoming vet appointments across pets
+============================================================
+All tests passed — advisor is grounded in schedule data.
+```
+
+Full eval log saved to `logs/eval_log.txt`. The harness skips tests gracefully if the API key is missing, making it safe to run in offline environments.
+
+---
+
 ## 💭 Reflection
 
 Building PawPal+ into a full AI system reinforced that the hardest part isn't the API call — it's constructing a context that gives the model enough information to be genuinely useful rather than generically helpful. The AI advisor is only as good as the schedule data injected into the prompt; a well-structured context makes the difference between "walk your dog" and "Chintu's morning walk at 07:30 is your top priority today."

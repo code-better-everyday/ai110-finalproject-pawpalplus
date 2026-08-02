@@ -1,0 +1,52 @@
+﻿============================================================
+PawPal+ AI Advisor — Evaluation Harness
+============================================================
+Profile loaded: Abhishek — 3 pets, 15 tasks
+
+Test 1: Identifies high-priority dog tasks with pet names
+  Q: What is most urgent for my dogs today?
+  A: # Most Urgent Tasks for Your Dogs Today
+
+**High Priority - Due Today (2026-08-02):**
+
+1. **Morning Walk** – 07:00 (30 mi...
+  PASS — keywords matched: ['chintu', 'pintu', 'walk', 'feeding', 'high']
+
+Test 2: Recognises group walk opportunity at 07:00
+  Q: Can Chintu and Pintu do their morning walk together?
+  A: Yes, absolutely! Chintu and Pintu can do their morning walk together. Both dogs have their Morning Walk scheduled for **...
+  PASS — keywords matched: ['together', '07:00', 'group']
+
+Test 3: Identifies the 08:00 feeding conflict with pet names
+  Q: Are there any scheduling conflicts I should fix?
+  A: Yes, there are **3 scheduling conflicts** to address:
+
+1. **07:00 – Morning Walk (Chintu & Pintu)**
+   - Both dogs need...
+  PASS — keywords matched: ['08:00', 'feeding', 'pintu', 'chinni']
+
+Test 4: Returns Chinni's specific tasks
+  Q: What tasks are scheduled for Chinni today?
+  A: # Chinni's Tasks for Today (Sunday, August 02, 2026)
+
+1. **Feeding** — 08:00 (10 min) — High priority
+2. **Litter Box Cl...
+  PASS — keywords matched: ['chinni', 'feeding', 'litter']
+
+Test 5: Finds upcoming vet appointments across pets
+  Q: Which pet has a vet appointment coming up?
+  A: Both **Pintu** (dog) and **Chinni** (cat) have vet appointments coming up:
+
+- **Pintu**: Vet Checkup on **Wednesday, Aug...
+  PASS — keywords matched: ['vet', 'pintu', 'chinni']
+
+============================================================
+Results: 5/5 passed
+
+  ✓  Identifies high-priority dog tasks with pet names
+  ✓  Recognises group walk opportunity at 07:00
+  ✓  Identifies the 08:00 feeding conflict with pet names
+  ✓  Returns Chinni's specific tasks
+  ✓  Finds upcoming vet appointments across pets
+============================================================
+All tests passed — advisor is grounded in schedule data.
