@@ -52,7 +52,7 @@ python -m venv .venv
 .venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 
-# 2. Set your Anthropic API key (needed for the AI advisor in Step 5)
+# 2. Set your Anthropic API key (needed for the AI advisor in Step 6)
 cp .env.example .env
 # Open .env and set: ANTHROPIC_API_KEY=your-key-here
 
@@ -60,7 +60,64 @@ cp .env.example .env
 streamlit run app.py          # opens http://localhost:8501
 ```
 
-> The app works fully without an API key — the AI advisor (Step 5) will show a warning if the key is missing, but all scheduling features remain available.
+> The app works fully without an API key — the AI advisor (Step 6) will show a warning if the key is missing, but all scheduling features remain available.
+
+---
+
+## 📸 Demo Walkthrough
+
+**Step 1 — Load your profile or set your name**
+If saved user data is found, the app shows a "Load [name]'s data" button. One click restores your owner profile and all pets — skip re-entering everything every session.
+
+![Owner welcome screen](demo/1-pet-owner-welcome-screen.png)
+
+---
+
+**Step 2 — Add a pet**
+Enter a pet name and species (dog, cat, rabbit, bird, fish, hamster, or other), then click **Add pet**. All added pets appear above the form.
+
+![Pet saved](demo/2-saved-a-pet.png)
+
+---
+
+**Step 3 — Add tasks**
+Select which pet, fill in the task name, time (HH:MM), duration, priority, and frequency, then click **Add task**. Each task row has ✏️ edit, ✅ complete, and 🗑 delete buttons.
+
+![Adding first task](demo/3-add-task1.png)
+
+---
+
+**Conflict highlight — orange ⚠**
+Tasks sharing the same time slot are flagged in orange. The conflict banner tells you to edit the time or delete a task to resolve.
+
+![Conflicting task shown in orange](demo/4-add-conflicting-task.png)
+
+---
+
+**Group walk highlight — blue 🐾**
+Same-species pets with a walk at the same time slot turn blue — cooperative scheduling, not a conflict.
+
+![Group walk shown in blue](demo/5-add-conflicting-task.png)
+
+---
+
+**Edit to resolve**
+Click ✏️ on a conflicting task to change its time inline — no need to delete and re-add.
+
+![Inline edit to resolve conflict](demo/6-delete-taks-add-newtaks-no-conflcit.png)
+
+---
+
+**Step 4 — Generate today's schedule**
+One click filters to tasks due today and produces a clean daily view sorted by priority then time. Conflicting rows stay orange; group walk rows show blue. No date column needed — everything is today.
+
+**Step 5 — Generate the weekly schedule**
+Shows all tasks across the week — daily tasks on today's date, weekly tasks on the next Saturday — with a Date column so you can see at a glance what's coming up. Sorted by date first, then priority.
+
+**Step 6 — Ask your AI advisor**
+Type a plain-English question. The advisor reads your current schedule and responds with grounded, specific advice.
+
+![AI advisor answering a scheduling question](demo/7-ai-advisor-response.png)
 
 ---
 
@@ -145,98 +202,6 @@ AI advisor responses are verified via `eval_advisor.py` (keyword-check harness, 
 
 ---
 
-## 📐 Scheduling Features
-
-| Feature | Method | Notes |
-|---------|--------|-------|
-| Sort by time | `Scheduler.sort_by_time()` | All tasks sorted chronologically by HH:MM string |
-| Sort by priority, then time | `Scheduler.sort_by_priority_then_time()` | High-priority tasks first; time is tiebreaker within each tier |
-| Filter by status | `Scheduler.filter_by_status(completed)` | Returns only completed or only incomplete tasks |
-| Filter by pet | `Scheduler.filter_by_pet(pet_name)` | Case-insensitive match on pet name |
-| Exact conflict detection | `Scheduler.detect_conflicts()` | Flags tasks sharing the same scheduled_time + due_date |
-| Duration-overlap detection | `Scheduler.detect_overlap_conflicts()` | Flags tasks whose time windows overlap even with different start times |
-| Group walk recognition | `Scheduler.detect_group_walks()` | Same-species pets with walk tasks at the same slot → blue 🐾 badge |
-| Daily schedule | Step 4 in `app.py` | Filters to today's tasks only — the primary daily-use view |
-| Weekly schedule | Step 5 in `app.py` (additional feature) | All tasks with Date column; weekly tasks placed on next Saturday |
-| Recurring tasks | `Scheduler.handle_recurrence(task, pet)` | Daily +1 day; weekly +7 days; `once` tasks not re-created |
-| Delete a task | `Pet.remove_task(name, scheduled_time)` | Removes by name + time match; primary conflict resolution path |
-| Orange conflict highlight | UI — `app.py` | Conflicting rows in orange bold ⚠ in task list and schedule |
-| Blue group walk highlight | UI — `app.py` | Group walk rows in blue 🐾 in task list and schedule |
-| Species emoji | UI — `app.py` `species_emoji()` | 🐕 🐈 🐇 🦜 🐠 🐹 🐾 — auto-applied everywhere |
-| Task type emoji | UI — `app.py` `task_emoji()` | 🚶 🍽️ 💊 🏥 ✂️ 🎾 📋 — inferred from task name keyword |
-| AI Care Advisor | `ai_advisor.ask_advisor()` | Claude answers questions using live schedule as context |
-| Saved user profiles | `data/users.json` | Owner + pets persist across sessions; loaded at Step 1 |
-
----
-
-## 📸 Demo Walkthrough
-
-**Step 1 — Load your profile or set your name**
-If saved user data is found, the app shows a "Load [name]'s data" button. One click restores your owner profile and all pets — skip re-entering everything every session.
-
-![Owner welcome screen](demo/1-pet-owner-welcome-screen.png)
-
----
-
-**Step 2 — Add a pet**
-Enter a pet name and species (dog, cat, rabbit, bird, fish, hamster, or other), then click **Add pet**. All added pets appear above the form.
-
-![Pet saved](demo/2-saved-a-pet.png)
-
----
-
-**Step 3 — Add tasks**
-Select which pet, fill in the task name, time (HH:MM), duration, priority, and frequency, then click **Add task**. Each task row has ✏️ edit, ✅ complete, and 🗑 delete buttons.
-
-![Adding first task](demo/3-add-task1.png)
-
----
-
-**Conflict highlight — orange ⚠**
-Tasks sharing the same time slot are flagged in orange. The conflict banner tells you to edit the time or delete a task to resolve.
-
-![Conflicting task shown in orange](demo/4-add-conflicting-task.png)
-
----
-
-**Group walk highlight — blue 🐾**
-Same-species pets with a walk at the same time slot turn blue — cooperative scheduling, not a conflict.
-
-![Group walk shown in blue](demo/5-add-conflicting-task.png)
-
----
-
-**Edit to resolve**
-Click ✏️ on a conflicting task to change its time inline — no need to delete and re-add.
-
-![Inline edit to resolve conflict](demo/6-delete-taks-add-newtaks-no-conflcit.png)
-
----
-
-**Step 4 — Generate today's schedule**
-One click filters to tasks due today and produces a clean daily view sorted by priority then time. Conflicting rows stay orange; group walk rows show blue. No date column needed — everything is today.
-
-**Step 5 — Generate the weekly schedule**
-Shows all tasks across the week — daily tasks on today's date, weekly tasks on the next Saturday — with a Date column so you can see at a glance what's coming up. Sorted by date first, then priority.
-
-**Step 6 — Ask your AI advisor**
-Type a plain-English question. The advisor reads your current schedule and responds with grounded, specific advice.
-
-![AI advisor answering a scheduling question](demo/7-ai-advisor-response.png)
-
----
-
-### Example workflow
-
-1. Open the app → click **Load Abhishek's data** → Chintu, Pintu, and Chinni are instantly loaded
-2. Add tasks for each pet — walks, feeding, vet appointments
-3. If Chintu and Pintu both have a morning walk at 07:30, the row turns **blue 🐾** (group walk)
-4. If a vet at 07:45 overlaps Pintu's 30-min walk, the overlap is flagged **orange ⚠**
-5. Click **Generate schedule** → priority-sorted, conflict-highlighted full schedule
-6. Ask the advisor: *"What's most urgent for Chintu today?"* → Claude answers using the live schedule
-
----
-
 ## 🏗️ Architecture
 
 ### System overview
@@ -249,7 +214,7 @@ Five modules work together:
 | Module | Role |
 |--------|------|
 | `pawpal_system.py` | Core backend — `Task`, `Pet`, `Owner`, `Scheduler` classes |
-| `app.py` | Streamlit UI — 5-step flow connecting user input to backend logic |
+| `app.py` | Streamlit UI — 6-step flow connecting user input to backend logic |
 | `ai_advisor.py` | AI integration — builds schedule context, calls Claude API, logs interactions |
 | `data/users.json` | Persistent user profiles — owner name and pet roster across sessions |
 | `logs/advisor_log.txt` | Interaction log — every AI query and response with timestamp |
@@ -388,7 +353,7 @@ Full eval log saved to `logs/eval_log.txt`. The harness skips tests gracefully i
 
 ### How AI was used during development
 
-Claude Code was the primary development partner throughout this project — not just for writing boilerplate, but for design decisions and algorithm choices. It drafted the `Task`/`Pet`/`Owner`/`Scheduler` class hierarchy, implemented `detect_group_walks()` and `detect_overlap_conflicts()` from natural-language descriptions, built the 5-step Streamlit flow, and designed the RAG context builder and prompt template. Every change was reviewed and approved before committing. Final decisions on features, data design, and UI behavior were made by the human developer.
+Claude Code was the primary development partner throughout this project — not just for writing boilerplate, but for design decisions and algorithm choices. It drafted the `Task`/`Pet`/`Owner`/`Scheduler` class hierarchy, implemented `detect_group_walks()` and `detect_overlap_conflicts()` from natural-language descriptions, built the 6-step Streamlit flow, and designed the RAG context builder and prompt template. Every change was reviewed and approved before committing. Final decisions on features, data design, and UI behavior were made by the human developer.
 
 ### One helpful AI suggestion
 
