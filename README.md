@@ -202,26 +202,30 @@ Enter a pet name and species (dog, cat, rabbit, bird, fish, hamster, or other), 
 ---
 
 **Step 3 — Add tasks**
-Select which pet, fill in the task name, time (HH:MM), duration, priority, and frequency, then click **Add task**. Duplicate tasks at the same time slot are blocked automatically.
+Select which pet, fill in the task name, time (HH:MM), duration, priority, and frequency, then click **Add task**. Each task row has ✏️ edit, ✅ complete, and 🗑 delete buttons.
 
 ![Adding first task](demo/3-add-task1.png)
 
-![Adding task for second pet](demo/4-add-task-second-pet.png)
+---
+
+**Conflict highlight — orange ⚠**
+Tasks sharing the same time slot are flagged in orange. The conflict banner tells you to edit the time or delete a task to resolve.
+
+![Conflicting task shown in orange](demo/4-add-conflicting-task.png)
 
 ---
 
-**Conflict and group walk highlights — live in the task list**
-- Tasks sharing a time slot → **orange ⚠**
-- Same-species pets with a walk at the same time → **blue 🐾** (group walk, not a problem)
+**Group walk highlight — blue 🐾**
+Same-species pets with a walk at the same time slot turn blue — cooperative scheduling, not a conflict.
 
-![Conflicting task shown in orange](demo/5-add-conflicting-task.png)
+![Group walk shown in blue](demo/5-add-conflicting-task.png)
 
 ---
 
-**Delete to resolve**
-Click **Delete** next to a conflicting task. The highlight clears instantly.
+**Edit to resolve**
+Click ✏️ on a conflicting task to change its time inline — no need to delete and re-add.
 
-![Conflict resolved after delete](demo/6-delete-taks-add-newtaks-no-conflcit.png)
+![Inline edit to resolve conflict](demo/6-delete-taks-add-newtaks-no-conflcit.png)
 
 ---
 
